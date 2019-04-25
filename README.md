@@ -9,5 +9,3 @@ The script works by reading in the CSV file, creating variables based on the col
 From there the code loops stating that based on the action you want "Add" or "Remove" in the CSV will create or delete the user.
 
 Code is documented in powershell, please let me know if it does not work or if you have additional questions.
-
-This code allows for 
