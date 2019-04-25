@@ -1,0 +1,59 @@
+#Import CSV file
+param (
+    [Parameter(Mandatory = $true)]
+    [String]$csvFile
+)
+
+$ADUsers= Import-CSV $csvFile
+
+foreach ($User in $ADUsers)
+{
+
+       $Firstname   = $User.firstname
+       $Lastname    = $User.lastname
+       $Username    = $User.username
+       $Description  = $User.description
+       $OUpath       = $User.oupath
+       $Password    = $User.password
+       $Action      = $User.action
+
+      #Compare Action Column to see what action to take 
+       if($Action -eq 'add'){
+           #Check if the user account already exists in domain
+            if (Get-ADUser -F {SamAccountName -eq $Username})
+            {
+               #If user exists write warning:
+               Write-Warning "A user account $Username already exists in the Domain."
+            }
+            else
+            {
+           
+                New-ADUser `
+            -SamAccountName $Username `
+            -Name "$Firstname $Lastname" `
+            -GivenName $Firstname `
+            -Surname $Lastname `
+            -Enabled $True `
+            -ChangePasswordAtLogon $True `
+            -DisplayName "$Lastname, $Firstname" `
+            -Description $Description `
+            -Path $OUpath `
+            -AccountPassword (convertto-securestring $Password -AsPlainText -Force)
+
+            }
+
+       }
+       else{
+        if (Get-ADUser -F {SamAccountName -eq $Username})
+        {
+           #If user exists delete user
+
+            Remove-ADUser -Identity $Username
+            }
+        else{
+            #Write warning showing user does not exist for deletion
+            Write-Warning "A user account $Username does NOT exist."
+        }
+    }
+}
+
